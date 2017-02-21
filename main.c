@@ -8,7 +8,8 @@
 #include <pthread.h>
 #include <time.h>
 #include <stdbool.h>
-
+#include <string.h>
+int TABLE_SIZE = 101;
 typedef struct node node;
 
 typedef struct node{
@@ -16,92 +17,69 @@ typedef struct node{
     node* next;
 } node;
 
-typedef struct llist{
-    node* head;
-    node* tail;
-} llist;
+typedef struct table table;
 
-void addNode(llist* List, int value){
-    if(List->head != NULL){ //if the list isnt empty
-        List->tail->next = (node*)(malloc(sizeof(node)));   //allocate for the node at add to the end
-        List->tail = List->tail->next;  //move the tail to the end
-        List->tail->value = value;  //add the value to the new node 
-        List->tail->next = NULL;    //make the new node point to null
-    } else {    //if the list is empty              
-        List->tail = (node*)malloc(sizeof(node));   //allocare a node at the end
-        List->head = List->tail;    //the start and the end are the same
-        List->tail->value = value;  //add the value to the new node
-        List->tail->next = NULL;    //make the new node point to null
+typedef struct table {
+    node* array;
+    char** keys;
+    int num_keys;
+} table;
+
+int hash(char* string){
+    int total = 0; 
+    for(int i = 0; i< strlen(string); i++){
+        total += (int)string[i];
+    }
+    return total % TABLE_SIZE;
+}
+
+int addNode(char* key, int value, table* Table){
+    Table->array[hash(key)].value = value;
+    Table->keys[Table->num_keys] = key;
+    Table->num_keys++;
+    return Table->num_keys;
+}
+
+void printKeys(table* Table){
+    for(int i = 0; i < Table->num_keys; i++){
+        printf("Key[%d]: %s\n",i, Table->keys[i]);
     }
 }
 
-void delNode(llist* List, int value){
-    node* prev = NULL;  //temp pointers
-    node* curr = List->head;    //strt at the head
-    while(curr != NULL){                        //while not at the end of the lsit
-        if(curr->value == value){               //if we find the value
-            if(curr == List->head){             //if the value is at the head
-                List->head = curr->next;        //the new head is the next value
-                if ( curr == List->tail){       //if also at the tail
-                    List->tail = NULL           //then the list is empty and the tail is null ( head will already be NULL)
-                }
-            } else {                            //not at head
-                if ( curr == List->tail){       //if we're at tail
-                    List->tail = prev;          //tail equals the last value ( safe because we know we're not also at head )
-                }
-                prev->next = curr->next;        //bypass the current node ( if tail, the curr node will have been pointing at null anyway )
-            }
-            free(curr);                         //free the memory
-            return;                             
-        } else {    //otherwise iterate
-            prev = curr;
-            curr = curr->next;
-        }  
+void printHashes(table* Table){
+    for(int i = 0; i < Table->num_keys; i++){
+        printf("Hash(\"%s\")(Key[%d]): %d\n",Table->keys[i],i, hash(Table->keys[i]));
     }
-    printf("\n");
 }
 
-void printList(llist* List){
-    node* curr = List->head;
-    while(curr != NULL){
-        printf("%d ", curr->value);
-        curr = curr->next;
+void printValues(table* Table){
+    for(int i = 0; i < Table->num_keys; i++){
+        printf("Key(%s): %d\n",Table->keys[i], Table->array[hash(Table->keys[i])].value);
     }
-    printf("\n");
 }
-
-void revList(llist* List){
-    List->tail = List->head;    //move tail to the old head
-    node* prev = NULL;          //prevs value
-    node* curr = List->head;    //curr is the head
-    node* next = NULL;          //next = null ( doesnt matter, it wont be used without being set)
-    
-    while(curr != NULL){        //while not at the end of the list
-        next = curr->next;      //store the value of the next node
-        curr->next = prev;      //point the curr node back at the last node
-        prev = curr;            //iterate
-        curr = next;
-    }
-    List->head = prev;          //at the end of the list, put head on the last value, and the list will be reversed
-    //this is empty safe
-}
-
 
 
 int main(int argc, char *argv[])
 {
-    llist List;
-    List.head = NULL;
-    List.tail = NULL;
-
-    addNode(&List, 2);
-    addNode(&List, 3);
-    addNode(&List, 4);
-    printList(&List);
-    revList(&List);
-    printList(&List);
-    delNode(&List, 2);
-    printList(&List);
+    int size = TABLE_SIZE;
+    int stringMax = 255;
+    table Table;
+    Table.array = (node*)(malloc(sizeof(node)*size));
+    Table.keys = (char**)(malloc(sizeof(char*)*size*stringMax));
+    Table.num_keys = 0;
+    char key1[] = "hello world";
+    char key2[] = "goodbye world";
+    char key3[] = "shutup world";
+    char key4[] = "sorry world";
+    printf("Keys: %d\n", addNode(key1, 2, &Table));
+    printf("Keys: %d\n", addNode(key2, 3, &Table));
+    printf("Keys: %d\n", addNode(key3, 4, &Table));
+    printf("Keys: %d\n", addNode(key4, 5, &Table));
+    printKeys(&Table);
+    printf("Hello world value: %d\n", Table.array[hash("hello world")].value);
+    printHashes(&Table);
+    printValues(&Table);
+    
 
 // done
     printf("Goodbye\n\n");
