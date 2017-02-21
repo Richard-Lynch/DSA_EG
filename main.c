@@ -9,7 +9,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <string.h>
-int TABLE_SIZE = 101;
+int TABLE_SIZE = 37;
 typedef struct node node;
 
 typedef struct node{
@@ -20,15 +20,15 @@ typedef struct node{
 typedef struct table table;
 
 typedef struct table {
-    node* array;
-    char** keys;
-    int num_keys;
+    node* array;    //array that holds values ( could be extended to buckets )
+    char** keys;    //array of strings
+    int num_keys;   //total number of keys in the list
 } table;
 
 int hash(char* string){
     int total = 0; 
     for(int i = 0; i< strlen(string); i++){
-        total += (int)string[i];
+        total += (int)string[i]*(i%3);
     }
     return total % TABLE_SIZE;
 }
