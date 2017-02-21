@@ -36,21 +36,24 @@ void addNode(llist* List, int value){
 }
 
 void delNode(llist* List, int value){
-    node* prev = NULL;
-    node* curr = List->head;
-    while(curr != NULL){
-        if(curr->value == value){
-            if(curr == List->head){
-                List->head = curr->next;
-            } else if ( curr == List->tail){
-                prev->next = curr->next;
-                List->tail = prev;
-            } else {
-                prev->next = curr->next;
+    node* prev = NULL;  //temp pointers
+    node* curr = List->head;    //strt at the head
+    while(curr != NULL){                        //while not at the end of the lsit
+        if(curr->value == value){               //if we find the value
+            if(curr == List->head){             //if the value is at the head
+                List->head = curr->next;        //the new head is the next value
+                if ( curr == List->tail){       //if also at the tail
+                    List->tail = NULL           //then the list is empty and the tail is null ( head will already be NULL)
+                }
+            } else {                            //not at head
+                if ( curr == List->tail){       //if we're at tail
+                    List->tail = prev;          //tail equals the last value ( safe because we know we're not also at head )
+                }
+                prev->next = curr->next;        //bypass the current node ( if tail, the curr node will have been pointing at null anyway )
             }
-            free(curr);
-            return;
-        } else {
+            free(curr);                         //free the memory
+            return;                             
+        } else {    //otherwise iterate
             prev = curr;
             curr = curr->next;
         }  
@@ -68,18 +71,19 @@ void printList(llist* List){
 }
 
 void revList(llist* List){
-    List->tail = List->head;
-    node* prev = NULL;
-    node* curr = List->head;
-    node* next = NULL;
+    List->tail = List->head;    //move tail to the old head
+    node* prev = NULL;          //prevs value
+    node* curr = List->head;    //curr is the head
+    node* next = NULL;          //next = null ( doesnt matter, it wont be used without being set)
     
-    while(curr != NULL){
-        next = curr->next;
-        curr->next = prev;
-        prev = curr;
+    while(curr != NULL){        //while not at the end of the list
+        next = curr->next;      //store the value of the next node
+        curr->next = prev;      //point the curr node back at the last node
+        prev = curr;            //iterate
         curr = next;
     }
-    List->head = prev;
+    List->head = prev;          //at the end of the list, put head on the last value, and the list will be reversed
+    //this is empty safe
 }
 
 
